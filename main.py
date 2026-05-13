@@ -19,8 +19,10 @@ APP_DIR = ROOT
 STATIC = ROOT / "static"
 UPLOADS = ROOT / "uploads"
 GENERATED = Path("/tmp/generated_ppt")
-PROJECTS = Path("/tmp/user_projects")
-USERS = Path("/tmp/users.json")
+DATA_DIR = Path("/var/data")
+
+PROJECTS = DATA_DIR / "user_projects"
+USERS = DATA_DIR / "users.json"
 for p in (UPLOADS, GENERATED, PROJECTS):
     p.mkdir(exist_ok=True)
 
