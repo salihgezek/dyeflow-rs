@@ -18,9 +18,9 @@ ROOT = Path(__file__).parent
 APP_DIR = ROOT
 STATIC = ROOT / "static"
 UPLOADS = ROOT / "uploads"
-GENERATED = ROOT / "generated_ppt"
-PROJECTS = ROOT / "user_projects"
-USERS = ROOT / "users.json"
+GENERATED = Path("/tmp/generated_ppt")
+PROJECTS = Path("/tmp/user_projects")
+USERS = Path("/tmp/users.json")
 for p in (UPLOADS, GENERATED, PROJECTS):
     p.mkdir(exist_ok=True)
 
@@ -1728,3 +1728,5 @@ async def comparison_ppt(req: Request):
         return FileResponse(out, media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation", filename="DyeFlow_RS_Compare_Report.pptx")
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+        p.mkdir(exist_ok=True)
+        
