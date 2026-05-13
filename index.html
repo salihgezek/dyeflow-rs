@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DyeFlow RS Web v46 Forced Login</title>
+<link rel="stylesheet" href="/static/styles.css?v=2400"/>
+</head>
+<body>
+<div id="toast"></div>
+<div id="authModal" class="authModal hidden">
+  <div class="authCard">
+    <button class="authClose" onclick="hideAuthModal()">×</button>
+    <h2>DyeFlow RS Login</h2>
+    <p class="authHint">Bu uygulamayı kullanmak için admin tarafından açılmış kullanıcı hesabı gerekir. İlk kayıt olan kullanıcı admin olur.</p>
+    <div class="authTabs"><button id="loginTab" class="active" onclick="setAuthMode('login')">Login</button><button id="registerTab" onclick="setAuthMode('register')">Register</button></div>
+    <div id="registerFields" class="hidden">
+      <label>Name<input id="authName" placeholder="Name Surname"></label>
+      <label>Email<input id="authEmail" placeholder="email@example.com"></label>
+      <label>Username<input id="authUsername" placeholder="username"></label>
+    </div>
+    <div id="loginFields">
+      <label>Email / Username<input id="authLogin" placeholder="email or username"></label>
+    </div>
+    <label>Password<input id="authPassword" type="password" placeholder="minimum 6 characters"></label>
+    <button class="orange fullBtn" onclick="submitAuth()">Continue</button>
+  </div>
+</div>
+<div id="appShell" class="app premiumShell hidden">
+  <div class="topBar">
+    <div class="topBarLeft"><span class="menuTitle">File</span><button onclick="saveProject()">Cloud Save</button><button onclick="saveBrowserBackup()">Browser Backup</button><button onclick="exportProjectJson()">Export JSON</button><button onclick="triggerImportProjectJson()">Import JSON</button><button onclick="refreshProjects();showTab('projects')">Open Projects</button></div>
+    <div class="topBarRight"><span id="authStatus" class="authStatus">Guest</span><button id="loginBtn" onclick="showAuthModal()">Login</button><button id="logoutBtn" class="hidden" onclick="logoutUser()">Logout</button><button onclick="calculateAndGoReport()">Calculate</button><button class="primaryMini" onclick="downloadPpt()">PowerPoint</button></div>
+  </div>
+
+  <header class="classicHeader premiumHeader">
+    <div class="dfLogo"><span>DF</span><span>RS</span></div>
+    <div class="brandText">
+      <div class="badgeLine"><span>WEB v46</span><span>FORCED LOGIN</span><span>ADMIN ACCESS</span></div>
+      <h1>DyeFlow RS</h1>
+      <p>Dyeing Process Reporting &amp; Simulation System</p>
+      <p>Process Design • Cost &amp; Carbon Analysis • PDF / Excel / PowerPoint Export</p>
+    </div>
+    <img class="cornerImage" src="/static/corner_image.png" alt="DyeFlow RS">
+  </header>
+
+  <div class="languageLine">
+    <label>Language:</label>
+    <select id="language">
+      <option value="EN">EN</option>
+      <option value="TR">TR</option>
+    </select>
+    <button onclick="applyLanguage()">Apply</button>
+  </div>
+
+  <div class="layout">
+  <aside class="sidebar">
+    <div class="sideLabel">Navigation</div>
+    <nav class="tabs">
+    <button class="tab active" data-tab="basic" data-key="tab_basic">Basic Inputs</button>
+    <button class="tab" data-tab="machine" data-key="tab_machine">Machine</button>
+    <button class="tab" data-tab="process" data-key="tab_process">Process</button>
+    <button class="tab" data-tab="steps" data-key="tab_steps">Steps</button>
+    <button class="tab" data-tab="report" data-key="tab_report">Report</button>
+    <button class="tab" data-tab="dashboard" data-key="tab_dashboard">Cost + Carbon</button>
+    <button class="tab" data-tab="projects" data-key="tab_projects">Projects</button>
+    <button id="adminTab" class="tab hidden" data-tab="admin">Admin Panel</button>
+    <button class="tab" data-tab="archive" data-key="tab_archive">Archive</button>
+  </nav>
+  </aside>
+
+  <main class="contentArea">
+    <section id="basic" class="page active">
+      <h1>DyeFlow RS</h1>
+      <h3 data-key="project_utility_inputs">Project & Utility Inputs</h3>
+      <fieldset>
+        <div class="grid5">
+          <label><span data-key="project_name">Project Name</span><input id="project_name" value="Demo Project"></label>
+          <label><span data-key="company_name">Company Name</span><input id="company_name" value="Demo Company"></label>
+          <label><span data-key="heating_source">Heating Source</span><select id="heating_source"><option>Natural Gas</option><option>Steam</option><option>Electric</option></select></label>
+          <label><span data-key="heating_capacity">Heating Capacity (Kcal/m3)</span><input id="heating_capacity" type="number" value="8250"></label>
+          <label><span data-key="transfer_heat_loss">Transfer Heat Loss (%)</span><input id="transfer_heat_loss" type="number" value="30"></label>
+          <label><span data-key="natural_gas_unit_price">Natural Gas Unit Price (€/Sm³)</span><input id="natural_gas_unit_price" type="number" value="1.2"></label>
+          <label><span data-key="water_type">Water Type</span><select id="water_type"><option>Soft</option><option>Hard</option><option>RO</option></select></label>
+          <label><span data-key="water_unit_price">Water Unit Price (€/m³)</span><input id="water_unit_price" type="number" value="1"></label>
+          <label><span data-key="waste_water_unit_price">Waste Water Unit Price (€/m³)</span><input id="waste_water_unit_price" type="number" value="0.9"></label>
+          <label><span data-key="electric_unit_price">Electric Unit Price (€/kWh)</span><input id="electric_unit_price" type="number" value="0.15"></label>
+        </div>
+      </fieldset>
+
+      <h3 data-key="labour">Labour</h3>
+      <fieldset>
+        <div class="grid3">
+          <label><span data-key="hourly_wage">Hourly Wage</span><input id="hourly_wage" type="number" value="8"></label>
+          <label><span data-key="number_of_workers">Number of Workers</span><input id="number_of_workers" type="number" value="1"></label>
+          <label><span data-key="number_of_machine">Number of Machine</span><input id="number_of_machine" type="number" value="3"></label>
+        </div>
+      </fieldset>
+
+      <h3 data-key="notes">Notes</h3>
+      <fieldset>
+        <textarea id="notes" rows="5"></textarea>
+      </fieldset>
+      <div class="navButtons"><span></span><button class="orange" onclick="showTab('machine')" data-key="next_step">Next Step</button></div>
+    </section>
+
+    <section id="machine" class="page">
+      <h3 data-key="machine_information">Machine Information</h3>
+      <fieldset>
+        <div class="grid4">
+          <label><span data-key="machine_name">Machine Name</span><input id="machine_name" value="600A"></label>
+          <label><span data-key="capacity_kg">Capacity (Kg)</span><input id="capacity_kg" type="number" value="600"></label>
+          <label><span data-key="drain_time_min">Drain Time (Min)</span><input id="drain_time_min" type="number" value="5"></label>
+          <label><span data-key="circulation_pump_power">Circulation Pump Power (kW)</span><input id="circulation_pump_power" type="number" value="24" onchange="calculatePower()"></label>
+          <label><span data-key="pump_ratio">Pump Ratio</span><input id="pump_ratio" type="number" value="1" onchange="calculatePower()"></label>
+          <label><span data-key="number_of_reel">Number Of Reel</span><input id="number_of_reel" type="number" value="3" onchange="calculatePower()"></label>
+          <label><span data-key="reel_power">Reel Power (kW)</span><input id="reel_power" type="number" value="2.2" onchange="calculatePower()"></label>
+          <label><span data-key="fan_power">Fan Power (kW)</span><input id="fan_power" type="number" value="0" onchange="calculatePower()"></label>
+          <label><span data-key="fan_ratio">Fan Ratio</span><input id="fan_ratio" type="number" value="0" onchange="calculatePower()"></label>
+          <label><span data-key="total_power_used">Total Power Used In Machine</span><input id="total_power_used" value="30.60" readonly></label>
+        </div>
+        <button onclick="calculatePower()" data-key="calculate_power">Calculate Power</button>
+        <button onclick="addCurrentMachineToArchive()" data-key="add_current_machine">Add Current Machine to Archive</button>
+      </fieldset>
+      <div class="navButtons">
+        <button onclick="showTab('basic')" data-key="previous_step">Previous Step</button>
+        <button class="orange" onclick="showTab('process')" data-key="next_step">Next Step</button>
+      </div>
+    </section>
+
+    <section id="process" class="page">
+      <h3 data-key="process">Process</h3>
+      <fieldset>
+        <div class="grid4">
+          <label><span data-key="process_type">Process Type</span><input id="process_type" value="Wash_PES"></label>
+          <label><span data-key="fabric_kg">Fabric Kg</span><input id="fabric_kg" type="number" value="500"></label>
+          <label><span data-key="flote">Flote</span><input id="flote" type="number" value="6"></label>
+          <label><span data-key="cost_currency">Cost Currency</span>
+            <span class="radio"><input type="radio" name="currency" value="TRY"> TRY <input type="radio" name="currency" value="USD"> USD <input type="radio" name="currency" value="EUR" checked> EUR</span>
+          </label>
+        </div>
+      </fieldset>
+      <h3 data-key="water_carry_over">Water / Carry Over</h3>
+      <fieldset>
+        <div class="grid4">
+          <label><span data-key="carry_over">Carry Over</span><input id="carry_over" type="number" value="2"></label>
+          <label><span data-key="fabric_status">Fabric Status</span><span class="radio"><input type="radio" name="fabric_status" value="Dry" checked> Dry <input type="radio" name="fabric_status" value="Wet"> Wet</span></label>
+        </div>
+      </fieldset>
+      <div class="navButtons">
+        <button onclick="showTab('machine')" data-key="previous_step">Previous Step</button>
+        <button onclick="syncFlote()" data-key="sync_flote">Transfer Flote and Water Amount to Steps</button>
+        <button class="orange" onclick="showTab('steps')" data-key="next_step">Next Step</button>
+      </div>
+    </section>
+
+    <section id="steps" class="page">
+      <div class="stepActions">
+        <button onclick="addStep()" data-key="add_new_step">+ ADD NEW STEP</button>
+        <button onclick="duplicateSelectedOrLastStep()" data-key="duplicate_step">Duplicate Step</button>
+        <button onclick="calculateAndGoReport()" class="orange" data-key="calculate_draw">Calculate and Draw Graph</button>
+      </div>
+      <div id="stepsContainer"></div>
+    </section>
+
+    <section id="report" class="page">
+      <h3 data-key="summary">Summary</h3>
+      <fieldset><div id="summaryBox"></div></fieldset>
+      <div class="reportButtons">
+        <button onclick="selectReportImage()" data-key="select_report_image">Select Report Image</button>
+        <button onclick="copyChemicals()" data-key="copy_chemicals">Copy Chemicals</button>
+        <button class="blue" onclick="downloadPackage()" data-key="presentation_package">Presentation Package</button>
+        <button onclick="downloadPpt()" data-key="export_powerpoint">Export PowerPoint</button><button onclick="openReportHtml()">PDF / Print Report</button>
+        <button onclick="downloadCSV()" data-key="export_excel">Export Excel</button>
+        <button onclick="downloadPDF()" data-key="export_pdf">Export PDF</button>
+        <button onclick="downloadChartPNG()">Chart PNG</button><button onclick="setGraphZoom(0.85)">Zoom -</button><button onclick="setGraphZoom(1.15)">Zoom +</button><button onclick="panGraph(-120)">← Pan</button><button onclick="panGraph(120)">Pan →</button><button onclick="resetGraphZoom()">Reset Graph</button>
+        <button onclick="downloadReportHtml()">HTML Report</button>
+        <button class="orange" onclick="calculate()" data-key="calculate_draw">Calculate and Draw Graph</button>
+      </div>
+      <input id="reportImageInput" type="file" accept="image/*" hidden>
+      <div id="reportImagePreview"></div>
+      <div class="reportGrid">
+        <fieldset>
+          <h3 data-key="chart_title">Dyeing Process Temperature Profile</h3>
+          <div id="chart"></div>
+        </fieldset>
+        <fieldset>
+          <h3>Chemicals - Word Copy Format</h3>
+          <textarea id="chemicalCopy" rows="18"></textarea>
+        </fieldset>
+      </div>
+    </section>
+
+    <section id="dashboard" class="page">
+      <h1 data-key="cost_carbon_dashboard">Cost + Carbon Dashboard</h1>
+      <div class="dashControls">
+        <button onclick="copyDashboard()" data-key="copy_dashboard_table">Copy Dashboard Table</button>
+        <button class="orange" onclick="calculate()" data-key="calculate_dashboard">Calculate Dashboard</button>
+      </div>
+      <div id="metrics" class="cards"></div>
+      <div id="dashboardVisuals" class="dashboardVisuals"></div>
+      <div class="dashTables">
+        <fieldset><h3>Cost Breakdown</h3><table id="costTable"><thead><tr><th>Cost Item</th><th>Batch</th><th>Cost / kg</th><th>Share %</th></tr></thead><tbody></tbody></table></fieldset>
+        <fieldset><h3>Carbon Breakdown</h3><table id="carbonTable"><thead><tr><th>Carbon Item</th><th>kg CO₂ / batch</th><th>g CO₂ / kg</th><th>Share %</th></tr></thead><tbody></tbody></table></fieldset>
+      </div>
+    </section>
+
+    <section id="projects" class="page">
+      <div class="projectActions">
+        <button onclick="selectFolderInfo()">Select Folder</button>
+        <button onclick="saveProject()">Save Current Project</button>
+        <button onclick="refreshProjects()">Refresh List</button>
+        <button onclick="loadSelectedProject()">Open Selected Project</button>
+        <button onclick="copySelectedProject()">Copy Selected Project</button>
+        <button class="orange" onclick="compareSelectedProjects()">Compare 2 Projects</button>
+        <button onclick="exportComparisonPpt()">Export Comparison to PPT</button>
+        <button class="blue" onclick="saveProject()">Save Current Project</button><button onclick="saveBrowserBackup()">Save Browser Backup</button><button onclick="loadBrowserBackup()">Load Browser Backup</button><button onclick="exportProjectJson()">Export JSON</button><button onclick="triggerImportProjectJson()">Import JSON</button><button onclick="checkHealth()">Health Check</button>
+      </div>
+      <fieldset class="localProjectBox"><h3>Local Browser Projects</h3><p class="mutedText">Login olmadan bilgisayara/tarayıcıya kaydedilen projeler burada görünür. JSON dosyası olarak da indirilebilir.</p><div class="projectActions"><button onclick="saveBrowserBackup()">Save to Computer + Browser</button><button onclick="loadBrowserBackup()">Open JSON Project</button><button onclick="loadAutoSave()">Load Autosave</button></div><table id="localProjectsTable"><thead><tr><th>Project Name</th><th>Company</th><th>Updated</th><th>Action</th></tr></thead><tbody></tbody></table></fieldset>
+      <table id="projectsTable"><thead><tr><th>File</th><th>Updated</th><th>Project Name</th><th>Company</th></tr></thead><tbody></tbody></table>
+      <fieldset id="comparisonBox" class="hidden"><h3>Project Comparison</h3><div id="comparisonResult"></div></fieldset>
+    </section>
+
+
+
+    <section id="admin" class="page">
+      <h1>Admin Panel</h1>
+      <fieldset>
+        <h3>Create / Authorize User</h3>
+        <div class="grid5">
+          <label>Name<input id="adminName" placeholder="Name Surname"></label>
+          <label>Email<input id="adminEmail" placeholder="user@example.com"></label>
+          <label>Username<input id="adminUsername" placeholder="username"></label>
+          <label>Password<input id="adminPassword" type="password" placeholder="minimum 6 characters"></label>
+          <label>Role<select id="adminRole"><option value="user">User</option><option value="admin">Admin</option></select></label>
+        </div>
+        <div class="adminPerms">
+          <label class="check"><input id="adminCanSave" type="checkbox" checked> Can save projects</label>
+          <label class="check"><input id="adminIsActive" type="checkbox" checked> Active user</label>
+        </div>
+        <button class="orange" onclick="adminCreateUser()">Create User</button>
+        <button onclick="adminRefreshUsers()">Refresh Users</button>
+      </fieldset>
+
+      <fieldset>
+        <h3>Users & Permissions</h3>
+        <p class="authHint">Admin can create users, reset passwords, enable/disable login, and allow or block project saving.</p>
+        <table id="adminUsersTable"><thead><tr><th>User</th><th>Email</th><th>Name</th><th>Role</th><th>Active</th><th>Can Save</th><th>New Password</th><th>Action</th></tr></thead><tbody></tbody></table>
+      </fieldset>
+    </section>
+
+    <section id="archive" class="page">
+      <div class="archiveGrid">
+        <fieldset>
+          <h3 data-key="machine_archive">Machine Archive</h3>
+          <button class="orange" onclick="addCurrentMachineToArchive()" data-key="add_current_machine">Add Current Machine to Archive</button>
+          <button onclick="applySelectedMachine()" data-key="apply_selected_machine">Apply Selected Machine</button>
+          <button onclick="deleteSelectedMachine()" data-key="delete_selected">Delete Selected</button>
+          <table id="machineArchiveTable"><thead><tr><th>Machine Name</th><th>Capacity (Kg)</th><th>Total Power Used In Machine</th><th>Drain Time (Min)</th></tr></thead><tbody></tbody></table>
+        </fieldset>
+        <fieldset>
+          <h3 data-key="chemical_archive">Chemical Archive</h3>
+          <button class="orange" onclick="addProjectChemicalsToArchive()" data-key="add_chemicals_from_project">Add Project Chemicals to Archive</button>
+          <button onclick="addSelectedChemicalToCurrentStep()" data-key="add_selected_chemical">Add Selected Chemical to Current Step</button>
+          <button onclick="deleteSelectedChemical()" data-key="delete_selected">Delete Selected</button>
+          <table id="chemicalArchiveTable"><thead><tr><th>Supplier</th><th>Chemical</th><th>Amount</th><th>Unit</th><th>Price</th></tr></thead><tbody></tbody></table>
+        </fieldset>
+      </div>
+    </section>
+  </main>
+  </div>
+</div>
+<script src="/static/app.js?v=2400"></script>
+</body>
+</html>

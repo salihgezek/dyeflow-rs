@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "username": "salih",
+      "email": "salihgezek@gmail.com",
+      "name": "salih gezek",
+      "role": "admin",
+      "can_save": true,
+      "is_active": true,
+      "password_hash": "fb1b8f1ee0ef5571e343ea5ac9501632$fa843df11084a8817f9f858e5b664f396a9ad725d7693a3767c8633a7bb657c4",
+      "created_at": "2026-05-13T18:43:01"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "v58_COMPARE_LABOUR_FIX",
+  "base": "v57_READABILITY_FINAL",
+  "date": "2026-05-13",
+  "changes": [
+    "Compare delta tolerance reduced from 0.005 to 0.0005 so Labour/kg and other close per-kg differences are displayed like other metrics instead of incorrectly showing Equal.",
+    "PPT readability and minimum 12 pt rule from v57 preserved.",
+    "Calculation engine and graph engine unchanged."
+  ]
+}
