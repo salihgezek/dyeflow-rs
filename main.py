@@ -19,8 +19,7 @@ APP_DIR = ROOT
 STATIC = ROOT / "static"
 UPLOADS = ROOT / "uploads"
 GENERATED = Path("/tmp/generated_ppt")
-DATA_DIR = Path("/var/data")
-
+DATA_DIR = Path("/tmp")
 PROJECTS = DATA_DIR / "user_projects"
 USERS = DATA_DIR / "users.json"
 for p in (UPLOADS, GENERATED, PROJECTS):
