@@ -93,14 +93,22 @@ def _save_users(data):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("DELETE FROM users")
 
     for u in data["users"]:
         cur.execute("""
-            INSERT INTO users
-            (username, password, name, email, role, active, can_save)
-            VALUES (%s,%s,%s,%s,%s,%s,%s)
-        """, (
+    INSERT INTO users
+    (username, password, name, email, role, active, can_save)
+    VALUES (%s,%s,%s,%s,%s,%s,%s)
+
+    ON CONFLICT (username)
+    DO UPDATE SET
+        password = EXCLUDED.password,
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        role = EXCLUDED.role,
+        active = EXCLUDED.active,
+        can_save = EXCLUDED.can_save
+""", (
             u.get("username"),
             u.get("password") or u.get("password_hash"),
             u.get("name"),
