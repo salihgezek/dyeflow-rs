@@ -7,3 +7,4 @@ python-pptx
 openpyxl
 numpy
 pandas
+psycopg2-binary
