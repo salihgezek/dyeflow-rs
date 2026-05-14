@@ -363,9 +363,14 @@ def calc(project):
                 letter_i += 1
                 labels.append(lab)
                 chemical_rows.append({
-                    "label": lab, "supplier": c.get("supplier",""), "chemical": c.get("chemical",""),
-                    "amount": N(c.get("amount"),0), "unit": c.get("unit","g/l"), "price": N(c.get("price"),0)
-                })
+    "label": lab,
+    "supplier": c.get("supplier",""),
+    "chemical": c.get("chemical",""),
+    "amount": N(c.get("amount"),0),
+    "unit": c.get("unit","g/l"),
+    "price": N(c.get("price"),0),
+    "bath_liters": current_bath_l
+})
                 legend.append(f"{lab}: {c.get('chemical') or c.get('supplier') or 'Chemical'}")
             dose_time=max([N(c.get("dose_time"),0) for c in chems] or [0])
             end_temp=N(chems[-1].get("final_c"), cb) if chems else cb
@@ -461,7 +466,7 @@ def calc(project):
         if r["unit"] == "%":
             chemical_cost += (fabric * amt/100) * r["price"]
         else:
-            chemical_cost += (base_process_water_l * amt / 1000) * r["price"]
+            chemical_cost += (r.get("bath_liters", base_process_water_l) * amt / 1000) * r["price"]
     total_cost = chemical_cost + electricity_cost + heating_cost + water_cost + waste_cost + labour
     electric_co2 = electricity_kwh * 0.42
     heating_co2 = heating_consumption * 2.02
