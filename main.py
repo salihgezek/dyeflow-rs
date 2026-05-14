@@ -523,7 +523,7 @@ return {
 
 @app.post("/api/calculate")
 async def calculate(req: Request):
-return calc(await req.json())
+    return calc(await req.json())
 
 def create_chart_png(project, out_path):
     data=calc(project)
