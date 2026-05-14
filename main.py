@@ -6,7 +6,10 @@ from pathlib import Path
 import json, math, io, zipfile, csv, tempfile, shutil, os, hashlib, secrets, base64, hmac, time
 from datetime import datetime
 import matplotlib
+import psycopg2
+
 matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -39,17 +42,77 @@ def health():
     return {"ok": True, "version": "v54_enterprise_report"}
 
 # ---------- Auth helpers ----------
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
 def _load_users():
-    if not USERS.exists():
-        return {"users": []}
-    try:
-        return json.loads(USERS.read_text(encoding="utf-8"))
-    except Exception:
-        return {"users": []}
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT,
+            name TEXT,
+            email TEXT,
+            role TEXT,
+            active BOOLEAN,
+            can_save BOOLEAN
+        )
+    """)
+
+    conn.commit()
+
+    cur.execute("""
+        SELECT username, password, name, email, role, active, can_save
+        FROM users
+    """)
+
+    rows = cur.fetchall()
+
+    users = []
+    for row in rows:
+        users.append({
+            "username": row[0],
+            "password": row[1],
+            "name": row[2],
+            "email": row[3],
+            "role": row[4],
+            "active": row[5],
+            "can_save": row[6]
+        })
+
+    cur.close()
+    conn.close()
+
+    return {"users": users}
 
 def _save_users(data):
-    USERS.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    cur.execute("DELETE FROM users")
+
+    for u in data["users"]:
+        cur.execute("""
+            INSERT INTO users
+            (username, password, name, email, role, active, can_save)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            u.get("username"),
+            u.get("password"),
+            u.get("name"),
+            u.get("email"),
+            u.get("role"),
+            u.get("active"),
+            u.get("can_save")
+        ))
+
+    conn.commit()
+    cur.close()
+    conn.close()
 def _hash_password(password, salt=None):
     salt = salt or secrets.token_hex(16)
     dk = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120000)
