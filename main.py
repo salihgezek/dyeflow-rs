@@ -464,13 +464,24 @@ def calc(project):
     heating_consumption = heating_kcal / max(N(utilities.get("heating_capacity"),8250),1)
     heating_cost = heating_consumption * N(utilities.get("natural_gas_unit_price"),1.2)
     chemical_cost = 0.0
-    for r in chemical_rows:
-        amt = r["amount"]
-        # approximate: g/l uses total water liters; % uses fabric kg
-        if r["unit"] == "%":
-            chemical_cost += (fabric * amt/100) * r["price"]
-        else:
-            chemical_cost += (base_process_water_l * amt / 1000) * r["price"]
+
+for r in chemical_rows:
+    amt = r["amount"]
+
+    # % uses fabric kg
+    if r["unit"] == "%":
+        chemical_cost += (fabric * amt / 100) * r["price"]
+
+    # g/L uses step bath liters
+    else:
+        step_water_l = (
+            r.get("bath_liters")
+            or r.get("water_l")
+            or r.get("step_water_l")
+            or base_process_water_l
+        )
+
+        chemical_cost += (step_water_l * amt / 1000) * r["price"]
     total_cost = chemical_cost + electricity_cost + heating_cost + water_cost + waste_cost + labour
     electric_co2 = electricity_kwh * 0.42
     heating_co2 = heating_consumption * 2.02
