@@ -515,15 +515,15 @@ for r in chemical_rows:
         "Overflow Extra Water L / batch": round(overflow_extra_water_l,2),
         "Energy kWh / kg": round(electricity_kwh/fabric,3),
     }
-return {
-        "x": x,
-        "y": y,
-        "events": events,
-        "chemical_rows": chemical_rows,
-        "chemical_legend": legend,
-        "dashboard": dashboard,
-        "total_time": round(total_time, 1)
-}
+        return {
+            "x": x,
+            "y": y,
+            "events": events,
+            "chemical_rows": chemical_rows,
+            "chemical_legend": legend,
+            "dashboard": dashboard,
+            "total_time": round(total_time, 1)
+    }
 
 @app.post("/api/calculate")
 async def calculate(req: Request):
