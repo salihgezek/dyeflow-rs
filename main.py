@@ -514,8 +514,8 @@ for r in chemical_rows:
         "Carry Over Saved Water L / batch": round(carry_over_l_saved,2),
         "Overflow Extra Water L / batch": round(overflow_extra_water_l,2),
         "Energy kWh / kg": round(electricity_kwh/fabric,3),
-    }
-        return {
+    }    
+    return {
             "x": x,
             "y": y,
             "events": events,
