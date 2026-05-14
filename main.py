@@ -102,7 +102,7 @@ def _save_users(data):
             VALUES (%s,%s,%s,%s,%s,%s,%s)
         """, (
             u.get("username"),
-            u.get("password"),
+            u.get("password") or u.get("password_hash"),
             u.get("name"),
             u.get("email"),
             u.get("role"),
