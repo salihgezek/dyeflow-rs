@@ -6,10 +6,7 @@ from pathlib import Path
 import json, math, io, zipfile, csv, tempfile, shutil, os, hashlib, secrets, base64, hmac, time
 from datetime import datetime
 import matplotlib
-import psycopg2
-
 matplotlib.use("Agg")
-
 import matplotlib.pyplot as plt
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -21,10 +18,9 @@ ROOT = Path(__file__).parent
 APP_DIR = ROOT
 STATIC = ROOT / "static"
 UPLOADS = ROOT / "uploads"
-GENERATED = Path("/tmp/generated_ppt")
-DATA_DIR = Path("/tmp")
-PROJECTS = DATA_DIR / "user_projects"
-USERS = DATA_DIR / "users.json"
+GENERATED = ROOT / "generated_ppt"
+PROJECTS = ROOT / "user_projects"
+USERS = ROOT / "users.json"
 for p in (UPLOADS, GENERATED, PROJECTS):
     p.mkdir(exist_ok=True)
 
@@ -42,85 +38,17 @@ def health():
     return {"ok": True, "version": "v54_enterprise_report"}
 
 # ---------- Auth helpers ----------
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
-
 def _load_users():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            username TEXT PRIMARY KEY,
-            password TEXT,
-            name TEXT,
-            email TEXT,
-            role TEXT,
-            active BOOLEAN,
-            can_save BOOLEAN
-        )
-    """)
-
-    conn.commit()
-
-    cur.execute("""
-        SELECT username, password, name, email, role, active, can_save
-        FROM users
-    """)
-
-    rows = cur.fetchall()
-
-    users = []
-    for row in rows:
-        users.append({
-            "username": row[0],
-            "password": row[1],
-            "name": row[2],
-            "email": row[3],
-            "role": row[4],
-            "active": row[5],
-            "can_save": row[6]
-        })
-
-    cur.close()
-    conn.close()
-
-    return {"users": users}
+    if not USERS.exists():
+        return {"users": []}
+    try:
+        return json.loads(USERS.read_text(encoding="utf-8"))
+    except Exception:
+        return {"users": []}
 
 def _save_users(data):
-    conn = get_db_connection()
-    cur = conn.cursor()
+    USERS.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-
-    for u in data["users"]:
-        cur.execute("""
-    INSERT INTO users
-    (username, password, name, email, role, active, can_save)
-    VALUES (%s,%s,%s,%s,%s,%s,%s)
-
-    ON CONFLICT (username)
-    DO UPDATE SET
-        password = EXCLUDED.password,
-        name = EXCLUDED.name,
-        email = EXCLUDED.email,
-        role = EXCLUDED.role,
-        active = EXCLUDED.active,
-        can_save = EXCLUDED.can_save
-""", (
-            u.get("username"),
-            u.get("password") or u.get("password_hash"),
-            u.get("name"),
-            u.get("email"),
-            u.get("role"),
-            u.get("active"),
-            u.get("can_save")
-        ))
-
-    conn.commit()
-    cur.close()
-    conn.close()
 def _hash_password(password, salt=None):
     salt = salt or secrets.token_hex(16)
     dk = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120000)
@@ -189,7 +117,7 @@ async def login(req: Request):
     password = data.get("password") or ""
     for u in _load_users().get("users", []):
         if (u.get("username") == login or u.get("email") == login) and u.get("is_active", True):
-            if _verify_password(password, u.get("password_hash") or u.get("password","")):
+            if _verify_password(password, u.get("password_hash","")):
                 return {"token": _token(u["username"]), "user": {k:v for k,v in u.items() if k!="password_hash"}}
     raise HTTPException(401, "Invalid login.")
 
@@ -464,24 +392,13 @@ def calc(project):
     heating_consumption = heating_kcal / max(N(utilities.get("heating_capacity"),8250),1)
     heating_cost = heating_consumption * N(utilities.get("natural_gas_unit_price"),1.2)
     chemical_cost = 0.0
-
-for r in chemical_rows:
-    amt = r["amount"]
-
-    # % uses fabric kg
-    if r["unit"] == "%":
-        chemical_cost += (fabric * amt / 100) * r["price"]
-
-    # g/L uses step bath liters
-    else:
-        step_water_l = (
-            r.get("bath_liters")
-            or r.get("water_l")
-            or r.get("step_water_l")
-            or base_process_water_l
-        )
-
-        chemical_cost += (step_water_l * amt / 1000) * r["price"]
+    for r in chemical_rows:
+        amt = r["amount"]
+        # approximate: g/l uses total water liters; % uses fabric kg
+        if r["unit"] == "%":
+            chemical_cost += (fabric * amt/100) * r["price"]
+        else:
+            chemical_cost += (base_process_water_l * amt / 1000) * r["price"]
     total_cost = chemical_cost + electricity_cost + heating_cost + water_cost + waste_cost + labour
     electric_co2 = electricity_kwh * 0.42
     heating_co2 = heating_consumption * 2.02
@@ -499,7 +416,12 @@ for r in chemical_rows:
         "Heating Cost / batch": round(heating_cost,2),
         "Water Cost / batch": round(water_cost,2),
         "Waste Water Cost / batch": round(waste_cost,2),
-        "Total CO2 / kg (g)": round(total_co2*1000/fabric,2),
+        "Labour Cost / batch": round(labour,2),
+        "Chemical Cost / batch": round(chemical_cost,2),
+        "Electricity CO₂ (kg/batch)": round(electric_co2,2),
+        "Heating CO₂ (kg/batch)": round(heating_co2,2),
+        "Total CO₂ (kg/batch)": round(total_co2,2),
+        "Total CO₂ / kg (g)": round(total_co2*1000/fabric,2),
         "Water L / kg": round((water_m3*1000)/fabric,2),
         "Total Water L / batch": round(water_m3*1000,2),
         "Wastewater L / batch": round(wastewater_l,2),
@@ -510,16 +432,7 @@ for r in chemical_rows:
         "Overflow Extra Water L / batch": round(overflow_extra_water_l,2),
         "Energy kWh / kg": round(electricity_kwh/fabric,3),
     }
-
-    return {
-        "x": x,
-        "y": y,
-        "events": events,
-        "chemical_rows": chemical_rows,
-        "chemical_legend": legend,
-        "dashboard": dashboard,
-        "total_time": round(total_time, 1)
-    }
+    return {"x":x,"y":y,"events":events,"chemical_rows":chemical_rows,"chemical_legend":legend,"dashboard":dashboard,"total_time":round(total_time,1)}
 
 @app.post("/api/calculate")
 async def calculate(req: Request):
@@ -1815,5 +1728,3 @@ async def comparison_ppt(req: Request):
         return FileResponse(out, media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation", filename="DyeFlow_RS_Compare_Report.pptx")
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
-        p.mkdir(exist_ok=True)
-        
