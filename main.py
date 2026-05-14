@@ -181,7 +181,7 @@ async def login(req: Request):
     password = data.get("password") or ""
     for u in _load_users().get("users", []):
         if (u.get("username") == login or u.get("email") == login) and u.get("is_active", True):
-            if _verify_password(password, u.get("password_hash","")):
+            if _verify_password(password, u.get("password_hash") or u.get("password","")):
                 return {"token": _token(u["username"]), "user": {k:v for k,v in u.items() if k!="password_hash"}}
     raise HTTPException(401, "Invalid login.")
 
