@@ -487,7 +487,7 @@ for r in chemical_rows:
     heating_co2 = heating_consumption * 2.02
     total_co2 = electric_co2 + heating_co2
     currency = project.get("cost_currency","EUR")
-    dashboard = {
+        dashboard = {
         f"Total Cost / batch ({currency})": round(total_cost,2),
         "Total Cost": round(total_cost,2),
         "Total Cost / kg": round(total_cost/fabric,3),
@@ -499,12 +499,7 @@ for r in chemical_rows:
         "Heating Cost / batch": round(heating_cost,2),
         "Water Cost / batch": round(water_cost,2),
         "Waste Water Cost / batch": round(waste_cost,2),
-        "Labour Cost / batch": round(labour,2),
-        "Chemical Cost / batch": round(chemical_cost,2),
-        "Electricity CO₂ (kg/batch)": round(electric_co2,2),
-        "Heating CO₂ (kg/batch)": round(heating_co2,2),
-        "Total CO₂ (kg/batch)": round(total_co2,2),
-        "Total CO₂ / kg (g)": round(total_co2*1000/fabric,2),
+        "Total CO2 / kg (g)": round(total_co2*1000/fabric,2),
         "Water L / kg": round((water_m3*1000)/fabric,2),
         "Total Water L / batch": round(water_m3*1000,2),
         "Wastewater L / batch": round(wastewater_l,2),
@@ -514,15 +509,16 @@ for r in chemical_rows:
         "Carry Over Saved Water L / batch": round(carry_over_l_saved,2),
         "Overflow Extra Water L / batch": round(overflow_extra_water_l,2),
         "Energy kWh / kg": round(electricity_kwh/fabric,3),
-    }    
+    }
+
     return {
-            "x": x,
-            "y": y,
-            "events": events,
-            "chemical_rows": chemical_rows,
-            "chemical_legend": legend,
-            "dashboard": dashboard,
-            "total_time": round(total_time, 1)
+        "x": x,
+        "y": y,
+        "events": events,
+        "chemical_rows": chemical_rows,
+        "chemical_legend": legend,
+        "dashboard": dashboard,
+        "total_time": round(total_time, 1)
     }
 
 @app.post("/api/calculate")
